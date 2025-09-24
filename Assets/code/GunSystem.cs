@@ -36,7 +36,7 @@ public class GunSystem : MonoBehaviour
         MyInput();
 
         //SetText
-        text.SetText(bulletsLeft +" / " + magazineSize);
+        text.SetText(bulletsLeft + " / " + magazineSize);
     }
 
     private void MyInput() 
@@ -70,11 +70,12 @@ public class GunSystem : MonoBehaviour
         if (Physics.Raycast(cam.transform.position, direction, out rayHit, range, whatIsEnemy))
         {
             Debug.Log(rayHit.collider.name);
-            if (rayHit.collider.CompareTag("Enemy"));
+            if (rayHit.collider.CompareTag("Enemy"))
              rayHit.collider.GetComponent<ShootingAi>().TakeDamage(damage);
         }
 
         //Graphics
+        if(rayHit.collider != null)
         Instantiate(bulletHoleGraphic, rayHit.point, Quaternion.Euler(0, 180, 0));
         Instantiate(muzzleFlash, attackPoints.position, Quaternion.identity);
             
@@ -95,7 +96,7 @@ public class GunSystem : MonoBehaviour
         private void Reload()
         {
             reloading = true;
-        Invoke("ReloadingFinished", reloadTime);
+        Invoke("ReloadFinished", reloadTime);
         }
 
     private void ReloadFinished()
