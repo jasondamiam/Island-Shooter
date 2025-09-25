@@ -58,9 +58,10 @@ public class GunSystem : MonoBehaviour
     {
         readyToShoot = false;
 
-        //spread 
+        //spread
         float x = Random.Range(-spread, spread);
-        float y = Random.Range(-range, range);
+        float y = Random.Range(-spread, spread);
+
 
         //Calculate direction with spread
         Vector3 direction = cam.transform.forward + new Vector3(x,y,0);
