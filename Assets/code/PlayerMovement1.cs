@@ -5,6 +5,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 5f;
     [SerializeField] float gravity = -9.81f;
+    [SerializeField] float jumpHeight = 2f;
 
     private CharacterController controller;
     private Animator animator;
@@ -13,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     void Awake()
     {
         controller = GetComponent<CharacterController>();
-        animator = GetComponent<Animator>(); // 👈 Needs Animator component
+        animator = GetComponent<Animator>(); //  Needs Animator component
     }
 
     void Update()
@@ -38,8 +39,10 @@ public class PlayerMovement : MonoBehaviour
         // Jump
         if (Input.GetButtonDown("Jump") && controller.isGrounded)
         {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetBool("isJumping", true);
-            // (add jump force here)
+          
+            
         }
         else
         {
