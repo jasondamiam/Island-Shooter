@@ -46,10 +46,5 @@ public class PlayerMovement : MonoBehaviour
             animator.SetBool("isJumping", false);
         }
 
-        // Attack example
-        if (Input.GetMouseButtonDown(0))
-        {
-            animator.SetTrigger("attack");
-        }
     }
 }
