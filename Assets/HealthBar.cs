@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,4 +26,8 @@ public class HealthBar : MonoBehaviour
         fill.color = gradient.Evaluate(slider.normalizedValue);
     }
 
+    internal void TakeDamage(int damage)
+    {
+        throw new NotImplementedException();
+    }
 }
