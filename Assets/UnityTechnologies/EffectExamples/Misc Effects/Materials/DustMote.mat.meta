@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ded9cb2c53db5124d91a26b1de623c1c
+timeCreated: 1473686037
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 127325
+  packageName: Particle Pack
+  packageVersion: 3.1
+  assetPath: Assets/UnityTechnologies/EffectExamples/Misc Effects/Materials/DustMote.mat
+  uploadId: 691001

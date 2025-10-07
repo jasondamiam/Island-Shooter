@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 294b116ff75425b488b0079bc5a4f39d
+timeCreated: 1473933328
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 127325
+  packageName: Particle Pack
+  packageVersion: 3.1
+  assetPath: Assets/UnityTechnologies/EffectExamples/Blood/Prefabs/GoopStreamEffect.prefab
+  uploadId: 691001

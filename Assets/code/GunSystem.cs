@@ -1,110 +1,144 @@
-using System.Xml.Serialization;
+﻿using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GunSystem : MonoBehaviour
 {
-    //Gun stats
-    public int damage;
-    public float timeBetweenShooting, spread, range, reloadTime, timeBetweenShots;
-    public int magazineSize, bulletsPerTap;
-    public bool allowButtonHold;
-    int bulletsLeft, bulletsShot;
+    [Header("Gun Stats")]
+    public int damage = 25;
+    public float timeBetweenShooting = 0.1f;
+    public float spread = 0.02f;
+    public float range = 100f;
+    public float reloadTime = 1.5f;
+    public int magazineSize = 30;
+    public int bulletsPerTap = 1;
+    public bool allowButtonHold = true;
 
-    //bools
-    bool shooting, readyToShoot, reloading;
+    private int bulletsLeft;
+    private int bulletsShot;
 
-    //reference
+    private bool shooting;
+    private bool readyToShoot;
+    private bool reloading;
+
+    [Header("References")]
     public Camera cam;
-    public Transform attackPoints;
-    public RaycastHit rayHit;
+    public Transform attackPoint;
     public LayerMask whatIsEnemy;
+    public LayerMask whatIsEnvironment;
 
-    //Graphics
-    public GameObject muzzleFlash, bulletHoleGraphic;
-    public TextMeshProUGUI text;
+    [Header("Graphics")]
+    public GameObject muzzleFlash;
+    public GameObject bulletHoleGraphic;
+    public GameObject bloodEffect;
+    public TextMeshProUGUI ammoText;
 
     private void Awake()
     {
         bulletsLeft = magazineSize;
-        readyToShoot= true;
+        readyToShoot = true;
     }
 
     private void Update()
     {
-        MyInput();
+        HandleInput();
 
-        //SetText
-        text.SetText(bulletsLeft + " / " + magazineSize);
+        if (ammoText != null)
+            ammoText.text = $"{bulletsLeft} / {magazineSize}";
     }
 
-    private void MyInput() 
-    
+    private void HandleInput()
     {
-        if (allowButtonHold) shooting = Input.GetMouseButton(0);
-        else shooting = Input.GetMouseButtonDown(0);
+        shooting = allowButtonHold ? Input.GetMouseButton(0) : Input.GetMouseButtonDown(0);
 
-        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading) Reload();
-    
-        // shoot
+        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading)
+            Reload();
+
         if (readyToShoot && shooting && !reloading && bulletsLeft > 0)
         {
             bulletsShot = bulletsPerTap;
             Shoot();
         }
     }
+
     private void Shoot()
     {
         readyToShoot = false;
 
-        //spread
+        // Add random spread
         float x = Random.Range(-spread, spread);
         float y = Random.Range(-spread, spread);
+        Vector3 direction = (cam.transform.forward + new Vector3(x, y, 0f)).normalized;
 
-
-        //Calculate direction with spread
-        Vector3 direction = cam.transform.forward + new Vector3(x,y,0);
-
-
-        //RayCast
-        if (Physics.Raycast(cam.transform.position, direction, out rayHit, range, whatIsEnemy))
+        if (Physics.Raycast(cam.transform.position, direction, out RaycastHit hit, range))
         {
-            Debug.Log(rayHit.collider.name);
-            if (rayHit.collider.CompareTag("Enemy"))
-             rayHit.collider.GetComponent<ShootingAi>().TakeDamage(damage);
+            IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(damage);
+
+                // Spawn blood effect
+                if (bloodEffect != null)
+                    Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+
+                // Flash enemy color
+                MonoBehaviour mb = damageable as MonoBehaviour;
+                if (mb != null)
+                    StartCoroutine(HitFlash(mb.gameObject));
+            }
+            else
+            {
+                // Spawn bullet hole on environment
+                if (bulletHoleGraphic != null && ((1 << hit.collider.gameObject.layer) & whatIsEnvironment) != 0)
+                {
+                    var hole = Instantiate(bulletHoleGraphic, hit.point + hit.normal * 0.01f, Quaternion.LookRotation(hit.normal));
+                    hole.transform.SetParent(hit.collider.transform);
+                }
+            }
         }
 
-        //Graphics
-        if(rayHit.collider != null)
-        Instantiate(bulletHoleGraphic, rayHit.point, Quaternion.Euler(0, 180, 0));
-        Instantiate(muzzleFlash, attackPoints.position, Quaternion.identity);
-            
+        // Muzzle flash
+        if (muzzleFlash != null && attackPoint != null)
+            Instantiate(muzzleFlash, attackPoint.position, attackPoint.rotation);
+
         bulletsLeft--;
         bulletsShot--;
 
-        Invoke("ResetShot", timeBetweenShooting);
-            
-        if(bulletsShot > 0 && bulletsLeft > 0)
-        Invoke("Shoot", timeBetweenShooting);
+        Invoke(nameof(ResetShot), timeBetweenShooting);
+
+        if (bulletsShot > 0 && bulletsLeft > 0)
+            Invoke(nameof(Shoot), timeBetweenShooting);
     }
 
-        private void ResetShot()
-        {
-            readyToShoot=true;
-        }
+    private void ResetShot() => readyToShoot = true;
 
-        private void Reload()
-        {
-            reloading = true;
-        Invoke("ReloadFinished", reloadTime);
-        }
-
-    private void ReloadFinished()
-    { 
-         bulletsLeft = magazineSize;
-         reloading = false;
-
+    private void Reload()
+    {
+        reloading = true;
+        Invoke(nameof(FinishReload), reloadTime);
     }
 
+    private void FinishReload()
+    {
+        bulletsLeft = magazineSize;
+        reloading = false;
+    }
+
+    private IEnumerator HitFlash(GameObject target)
+    {
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers)
+        {
+            if (r.material.HasProperty("_Color"))
+                r.material.color = Color.white;
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        foreach (var r in renderers)
+        {
+            if (r.material.HasProperty("_Color"))
+                r.material.color = Color.red;
+        }
+    }
 }

@@ -12,10 +12,17 @@ TagManager:
   - 
   - Water
   - UI
+<<<<<<< Updated upstream
   - MiniMapObject
   - 
   - 
   - 
+=======
+  - whatIsGround
+  - whatIsWall
+  - Enemy
+  - whatIsPlayer
+>>>>>>> Stashed changes
   - 
   - 
   - 
